@@ -24,45 +24,48 @@ extension Vector {
 
         return dist
     }
-}
 
+    func get_neighbors(_ train: [Vector], _ k: Int = 5) -> [Vector] {
+        var distances = train.map {
+            (
+                $0, 
+                Array(self[0..<self.count-1])
+                    .distance(from: Array($0[0..<$0.count-1]))
+            )
+        }
 
-func get_neighbors(_ train: [Vector], _ testRow: Vector, _ k: Int = 5) -> [Vector] {
-    var distances = train.map {
-        ($0, Array(testRow[0..<testRow.count-1]).distance(from: Array($0[0..<$0.count-1])))
+        distances.sort {
+            $0.1 > $1.1
+        }
+
+        let neighbors = (1...k).map {
+            distances[$0].0
+        }
+
+        return neighbors
     }
 
-    distances.sort {
-        $0.1 > $1.1
+    func predict_label(_ train: [Vector], _ k: Int = 5) -> Float {
+
+        let neighbors = self.get_neighbors(train, k)
+
+        let outputValues = neighbors.map{ $0.last ?? -1 }
+
+        var counts = [Float: Int]()
+
+        outputValues.forEach { counts[$0] = (counts[$0] ?? 0) + 1 }
+
+        let max = counts.max (by: {$0.1 < $1.1})
+
+        return max?.key ?? -1
     }
-
-    let neighbors = (1...k).map {
-        distances[$0].0
-    }
-
-    return neighbors
-
 }
 
-func predict_label(_ train: [Vector], _ test_row: Vector, _ k: Int = 5) -> Float {
-
-    let neighbors = get_neighbors(train, test_row, k)
-
-    let outputValues = neighbors.map{ $0.last ?? -1 }
-
-    var counts = [Float: Int]()
-
-    outputValues.forEach { counts[$0] = (counts[$0] ?? 0) + 1 }
-
-    let max = counts.max (by: {$0.1 < $1.1})
-
-    return max?.key ?? -1
-}
 
 func KNN(train: [Vector], test: [Vector], k: Int = 5) -> Vector {
 
     let predictions = test.map {
-        predict_label(train, $0, k)
+        $0.predict_label(train, k)
     }
     
     return predictions
