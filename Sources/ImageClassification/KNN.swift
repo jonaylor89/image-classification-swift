@@ -7,7 +7,9 @@
 
 import Foundation
 
-func distance(from row1: [Float], to row2: [Float]) -> Float {
+typealias Vector = [Float]
+
+func distance(from row1: Vector, to row2: Vector) -> Float {
 
     let distanceSq = zip(row1, row2).map {
         $0.0 - $0.1
@@ -18,7 +20,7 @@ func distance(from row1: [Float], to row2: [Float]) -> Float {
     return dist
 }
 
-func get_neighbors(_ train: [[Float]], _ test_row: [Float], _ k: Int = 5) -> [[Float]] {
+func get_neighbors(_ train: [Vector], _ test_row: Vector, _ k: Int = 5) -> [Vector] {
     var distances = train.map {
         ($0, distance(from: Array(test_row[0..<test_row.count-1]), to: Array($0[0..<$0.count-1])))
     }
@@ -35,7 +37,7 @@ func get_neighbors(_ train: [[Float]], _ test_row: [Float], _ k: Int = 5) -> [[F
 
 }
 
-func predict_label(_ train: [[Float]], _ test_row: [Float], _ k: Int = 5) -> Float {
+func predict_label(_ train: [Vector], _ test_row: Vector, _ k: Int = 5) -> Float {
 
     let neighbors = get_neighbors(train, test_row, k)
 
@@ -45,12 +47,12 @@ func predict_label(_ train: [[Float]], _ test_row: [Float], _ k: Int = 5) -> Flo
 
     outputValues.forEach { counts[$0] = (counts[$0] ?? 0) + 1 }
 
-    let max = counts.max(by: {$0.1 < $1.1})
+    let max = counts.max (by: {$0.1 < $1.1})
 
     return max?.key ?? -1
 }
 
-func KNN(train: [[Float]], test: [[Float]], k: Int = 5) -> [Float] {
+func KNN(train: [Vector], test: [Vector], k: Int = 5) -> Vector {
 
     let predictions = test.map {
         predict_label(train, $0, k)
@@ -60,14 +62,14 @@ func KNN(train: [[Float]], test: [[Float]], k: Int = 5) -> [Float] {
 }
 
 
-func crossValidationSplit(on dataset: [[Float]], with n_folds: Int) -> [[[Float]]] {
+func crossValidationSplit(on dataset: [Vector], with n_folds: Int) -> [[Vector]] {
 
-    var datasetSplit = [[[Float]]]()
+    var datasetSplit = [[Vector]]()
     var datasetCopy = dataset
     let foldSize = dataset.count / n_folds
 
     for _ in 0..<n_folds {
-        var fold = [[Float]]()
+        var fold = [Vector]()
 
         while fold.count < foldSize {
             let idx = Int.random(in: 1..<datasetCopy.count)
@@ -82,7 +84,7 @@ func crossValidationSplit(on dataset: [[Float]], with n_folds: Int) -> [[[Float]
     
 }
 
-func accuracyMetric(_ actual: [Float], _ predicted: [Float]) -> Float {
+func accuracyMetric(_ actual: Vector, _ predicted: Vector) -> Float {
 
     let result = zip(actual, predicted).map() {
         $0.0 == $0.1
@@ -94,10 +96,10 @@ func accuracyMetric(_ actual: [Float], _ predicted: [Float]) -> Float {
     return correctCount / length * 100.0
 }
 
-func evaluate(on dataset: [[Float]], k: Int = 5, n_folds: Int = 10) -> [Float] {
+func evaluate(on dataset: [Vector], k: Int = 5, n_folds: Int = 10) -> Vector {
     let folds = crossValidationSplit(on: dataset, with: n_folds)
     
-    var scores = [Float]()
+    var scores = Vector()
     
     for (idx, fold) in folds.enumerated() {
         var folds_copy = folds
@@ -105,7 +107,7 @@ func evaluate(on dataset: [[Float]], k: Int = 5, n_folds: Int = 10) -> [Float] {
         folds_copy.remove(at: idx)
         
         let trainSet = folds_copy.reduce([], +)
-        var testSet = [[Float]]()
+        var testSet = [Vector]()
         
         for var row in fold {
             row[row.endIndex - 1] = -1

@@ -6,7 +6,7 @@ let np = Python.import("numpy")
 let file = "dataset.csv"
 let np_dataset = np.loadtxt(file, delimiter: ",")
 
-let dataset: [[Float]] = Array(np_dataset)!
+let dataset: [Vector] = Array(np_dataset)!
 
 var total_avg: Float = 0
 for k in 1..<6 {
