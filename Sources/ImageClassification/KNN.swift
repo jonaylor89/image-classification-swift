@@ -25,7 +25,7 @@ extension Vector {
         return dist
     }
 
-    func get_neighbors(_ train: [Vector], _ k: Int = 5) -> [Vector] {
+    func getNeighbors(_ train: [Vector], _ k: Int = 5) -> [Vector] {
         var distances = train.map {
             (
                 $0, 
@@ -45,19 +45,27 @@ extension Vector {
         return neighbors
     }
 
-    func predict_label(_ train: [Vector], _ k: Int = 5) -> Float {
-
-        let neighbors = self.get_neighbors(train, k)
-
-        let outputValues = neighbors.map{ $0.last ?? -1 }
+    func maxCount() -> Float {
 
         var counts = [Float: Int]()
 
-        outputValues.forEach { counts[$0] = (counts[$0] ?? 0) + 1 }
+        self.forEach { counts[$0] = (counts[$0] ?? 0) + 1 }
 
         let max = counts.max (by: {$0.1 < $1.1})
 
         return max?.key ?? -1
+    }
+
+    func predictLabel(_ train: [Vector], _ k: Int = 5) -> Float {
+
+        let neighbors = self.getNeighbors(train, k)
+
+        let outputValues = neighbors.map{ $0.last ?? -1 }
+
+        let prediction = outputValues.maxCount()
+
+        return prediction
+        
     }
 }
 
@@ -65,7 +73,7 @@ extension Vector {
 func KNN(train: [Vector], test: [Vector], k: Int = 5) -> Vector {
 
     let predictions = test.map {
-        $0.predict_label(train, k)
+        $0.predictLabel(train, k)
     }
     
     return predictions
@@ -94,7 +102,7 @@ func crossValidationSplit(on dataset: [Vector], with n_folds: Int) -> [[Vector]]
     
 }
 
-func accuracyMetric(_ actual: Vector, _ predicted: Vector) -> Float {
+func accuracyMetric(actual: Vector, predicted: Vector) -> Float {
 
     let result = zip(actual, predicted).map() {
         $0.0 == $0.1
@@ -126,7 +134,7 @@ func evaluate(on dataset: [Vector], k: Int = 5, n_folds: Int = 10) -> Vector {
         
         let predicted = KNN(train: trainSet, test: testSet, k: k)
         let actual = fold.map { $0.last ?? -1 }
-        let accuracy = accuracyMetric(actual, predicted)
+        let accuracy = accuracyMetric(actual: actual, predicted: predicted)
         
         scores.append(accuracy)
     }
