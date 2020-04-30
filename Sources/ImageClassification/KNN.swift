@@ -9,20 +9,27 @@ import Foundation
 
 typealias Vector = [Float]
 
-func distance(from row1: Vector, to row2: Vector) -> Float {
+extension Vector {
+    func sum() -> Float {
+        return self.reduce(0.0, +)
+    }
 
-    let distanceSq = zip(row1, row2).map {
-        $0.0 - $0.1
-    }.reduce(0.0, +)
+    func distance(from row: Vector) -> Float {
 
-    let dist = sqrt(distanceSq)
+        let distanceSq = zip(self, row).map {
+            $0.0 - $0.1
+        }.sum()
 
-    return dist
+        let dist = sqrt(distanceSq)
+
+        return dist
+    }
 }
 
-func get_neighbors(_ train: [Vector], _ test_row: Vector, _ k: Int = 5) -> [Vector] {
+
+func get_neighbors(_ train: [Vector], _ testRow: Vector, _ k: Int = 5) -> [Vector] {
     var distances = train.map {
-        ($0, distance(from: Array(test_row[0..<test_row.count-1]), to: Array($0[0..<$0.count-1])))
+        ($0, Array(testRow[0..<testRow.count-1]).distance(from: Array($0[0..<$0.count-1])))
     }
 
     distances.sort {
